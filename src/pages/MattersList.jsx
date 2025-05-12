@@ -43,6 +43,61 @@ const MattersList = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Modal states
+  const [showNewMatterModal, setShowNewMatterModal] = useState(false);
+  const [showEditMatterModal, setShowEditMatterModal] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(null);
+  const [currentMatter, setCurrentMatter] = useState(null);
+  
+  // Form state
+  const initialFormState = {
+    title: '',
+    client: '',
+    type: '',
+    court: '',
+    status: 'pending',
+    assignedTo: ''
+  };
+  
+  const [formData, setFormData] = useState(initialFormState);
+  const [formErrors, setFormErrors] = useState({});
+  
+  // Handle form change
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+    
+    // Clear error for the field being edited
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: null
+      });
+    }
+  };
+  
+  // Validate form
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    if (!formData.client.trim()) errors.client = 'Client is required';
+    if (!formData.type.trim()) errors.type = 'Type is required';
+    if (!formData.assignedTo.trim()) errors.assignedTo = 'Assignment is required';
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  
+  // Reset form
+  const resetForm = () => {
+    setFormData(initialFormState);
+    setFormErrors({});
+  };
   
   // Sample data
   const initialMatters = [
@@ -155,26 +210,96 @@ const MattersList = () => {
     
     switch(action) {
       case 'delete':
-        toast.success(`${selectedMatters.length} matters would be deleted`);
+        setShowDeleteConfirmation(true);
         break;
       case 'export':
-        toast.success(`${selectedMatters.length} matters would be exported`);
+        // Simulate export functionality
+        setTimeout(() => {
+          toast.success(`${selectedMatters.length} matters exported successfully`);
+          setSelectedMatters([]);
+        }, 1000);
         break;
       case 'status':
-        toast.success(`Status would be changed for ${selectedMatters.length} matters`);
+        // Simulate status change
+        const newStatus = 'active';
+        const updatedMatters = matters.map(matter => 
+          selectedMatters.includes(matter.id) 
+            ? {...matter, status: newStatus} 
+            : matter
+        );
+        setMatters(updatedMatters);
+        toast.success(`Status changed to '${newStatus}' for ${selectedMatters.length} matters`);
+        setSelectedMatters([]);
         break;
       default:
         break;
     }
-    
+  };
+  
+  // Handle delete confirmation
+  const confirmDelete = () => {
+    // Delete the selected matters
+    const mattersToDelete = selectedMatters;
+    const updatedMatters = matters.filter(matter => !mattersToDelete.includes(matter.id));
+    setMatters(updatedMatters);
+    toast.success(`${selectedMatters.length} matters deleted successfully`);
+    setSelectedMatters([]);
+    setShowDeleteConfirmation(false);
+  };
+  
+  // Handle more menu click
+  const handleMoreClick = (matterId, event) => {
+    event.stopPropagation();
+    setShowMoreMenu(showMoreMenu === matterId ? null : matterId);
+  };
+  
+  // Handle more menu actions
+  const handleMoreAction = (action, matter) => {
+    setShowMoreMenu(null);
     // Clear selection after action
     setSelectedMatters([]);
   };
   
   // Handle create matter
   const handleCreateMatter = () => {
-    toast.success('New matter creation dialog would open here');
-    // This would typically open a modal or navigate to a creation form
+    resetForm();
+    setShowNewMatterModal(true);
+  };
+  
+  // Handle edit matter
+  const handleEditMatter = (matter, event) => {
+    if (event) event.stopPropagation();
+    setCurrentMatter(matter);
+    setFormData({
+      title: matter.title,
+      client: matter.client,
+      type: matter.type,
+      court: matter.court || '',
+      status: matter.status,
+      assignedTo: matter.assignedTo
+    });
+    setShowEditMatterModal(true);
+    setShowMoreMenu(null);
+  };
+  
+  // Handle form submission
+  const handleSubmitForm = (e) => {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      if (showNewMatterModal) {
+        // Create new matter
+        const newMatter = {
+          id: matters.length + 1,
+          ...formData,
+          lastUpdated: new Date().toISOString().split('T')[0]
+        };
+        setMatters([...matters, newMatter]);
+        toast.success('New matter created successfully');
+        setShowNewMatterModal(false);
+        resetForm();
+      }
+    }
   };
   
   // Handle sidebar toggle
@@ -408,6 +533,191 @@ const MattersList = () => {
               <span>New Matter</span>
             </button>
           </div>
+
+          {/* New Matter Modal */}
+          {showNewMatterModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-surface-900 rounded-2xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold">Create New Matter</h3>
+                  <button 
+                    onClick={() => setShowNewMatterModal(false)}
+                    className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                  >
+                    <SlashIcon size={20} />
+                  </button>
+                </div>
+                
+                <form onSubmit={handleSubmitForm}>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Matter Title</label>
+                      <input 
+                        type="text" 
+                        name="title"
+                        value={formData.title}
+                        onChange={handleFormChange}
+                        className={`w-full p-2 border rounded-xl ${formErrors.title ? 'border-red-500' : 'border-surface-300 dark:border-surface-600'}`}
+                        placeholder="Enter matter title"
+                      />
+                      {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Client</label>
+                      <input 
+                        type="text" 
+                        name="client"
+                        value={formData.client}
+                        onChange={handleFormChange}
+                        className={`w-full p-2 border rounded-xl ${formErrors.client ? 'border-red-500' : 'border-surface-300 dark:border-surface-600'}`}
+                        placeholder="Enter client name"
+                      />
+                      {formErrors.client && <p className="text-red-500 text-xs mt-1">{formErrors.client}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Type</label>
+                      <select 
+                        name="type"
+                        value={formData.type}
+                        onChange={handleFormChange}
+                        className={`w-full p-2 border rounded-xl ${formErrors.type ? 'border-red-500' : 'border-surface-300 dark:border-surface-600'}`}
+                      >
+                        <option value="">Select type</option>
+                        {matterTypes.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                      {formErrors.type && <p className="text-red-500 text-xs mt-1">{formErrors.type}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Court (Optional)</label>
+                      <input 
+                        type="text" 
+                        name="court"
+                        value={formData.court}
+                        onChange={handleFormChange}
+                        className="w-full p-2 border border-surface-300 dark:border-surface-600 rounded-xl"
+                        placeholder="Enter court name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Status</label>
+                      <select 
+                        name="status"
+                        value={formData.status}
+                        onChange={handleFormChange}
+                        className="w-full p-2 border border-surface-300 dark:border-surface-600 rounded-xl"
+                      >
+                        {matterStatuses.map(status => (
+                          <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Assigned To</label>
+                      <input 
+                        type="text" 
+                        name="assignedTo"
+                        value={formData.assignedTo}
+                        onChange={handleFormChange}
+                        className={`w-full p-2 border rounded-xl ${formErrors.assignedTo ? 'border-red-500' : 'border-surface-300 dark:border-surface-600'}`}
+                        placeholder="Enter attorney name"
+                      />
+                      {formErrors.assignedTo && <p className="text-red-500 text-xs mt-1">{formErrors.assignedTo}</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button 
+                      type="button"
+                      onClick={() => setShowNewMatterModal(false)}
+                      className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit"
+                      className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl"
+                    >
+                      Create Matter
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit Matter Modal */}
+          {showEditMatterModal && currentMatter && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white dark:bg-surface-900 rounded-2xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-semibold">Edit Matter</h3>
+                  <button 
+                    onClick={() => setShowEditMatterModal(false)}
+                    className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                  >
+                    <SlashIcon size={20} />
+                  </button>
+                </div>
+                
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (validateForm()) {
+                    // Update the matter
+                    const updatedMatters = matters.map(m => 
+                      m.id === currentMatter.id ? 
+                      {...m, ...formData, lastUpdated: new Date().toISOString().split('T')[0]} : 
+                      m
+                    );
+                    setMatters(updatedMatters);
+                    toast.success('Matter updated successfully');
+                    setShowEditMatterModal(false);
+                  }
+                }}>
+                  {/* Same form fields as New Matter Modal */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Matter Title</label>
+                      <input 
+                        type="text" 
+                        name="title"
+                        value={formData.title}
+                        onChange={handleFormChange}
+                        className={`w-full p-2 border rounded-xl ${formErrors.title ? 'border-red-500' : 'border-surface-300 dark:border-surface-600'}`}
+                        placeholder="Enter matter title"
+                      />
+                      {formErrors.title && <p className="text-red-500 text-xs mt-1">{formErrors.title}</p>}
+                    </div>
+                    
+                    {/* Additional form fields would be repeated here */}
+                    {/* ... */}
+                  </div>
+                  
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button 
+                      type="button"
+                      onClick={() => setShowEditMatterModal(false)}
+                      className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-xl"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit"
+                      className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl"
+                    >
+                      Update Matter
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
           
           {/* Filter dropdown */}
           {showFilterMenu && (
@@ -570,9 +880,285 @@ const MattersList = () => {
                             </button>
                             <button 
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                              <EditIcon size={16} />
+                            </button>
+                              <UserIcon size={16} />
+                            </button>
+                            <button 
+                              onClick={(e) => handleEditMatter(matter, e)}
+                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                              title="Edit matter"
                             >
                               <EditIcon size={16} />
                             </button>
+                            <div className="relative">
+                              <button 
+                                onClick={(e) => handleMoreClick(matter.id, e)}
+                                className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                                title="More options"
+                              >
+                                <MoreHorizontalIcon size={16} />
+                              </button>
+                              
+                              {/* Dropdown menu */}
+                              {showMoreMenu === matter.id && (
+                                <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-surface-800 rounded-xl shadow-card border border-surface-200 dark:border-surface-700 z-10">
+                                  <ul className="py-1">
+                                    <li>
+                                      <button
+                                        onClick={() => {
+                                          setCurrentMatter(matter);
+                                          setShowMoreMenu(null);
+                                          toast.success(`Matter ${matter.title} duplicated`);
+                                          // Duplicate logic would go here
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700"
+                                      >
+                                        Duplicate
+                                      </button>
+                                    </li>
+                                    <li>
+                                      <button
+                                        onClick={() => {
+                                          toast.success(`Matter ${matter.title} archived`);
+                                          setShowMoreMenu(null);
+                                          // Archive logic would go here
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700"
+                                      >
+                                        Archive
+                                      </button>
+                                    </li>
+                                    <li>
+                                      <button
+                                        onClick={() => {
+                                          setShowMoreMenu(null);
+                                          // Set selected matter and trigger single delete
+                                          setSelectedMatters([matter.id]);
+                                          setShowDeleteConfirmation(true);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                      >
+                                        Delete
+                                      </button>
+                                    </li>
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirmation && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className="bg-white dark:bg-surface-900 rounded-2xl p-6 w-full max-w-md shadow-xl">
+                    <div className="text-center mb-5">
+                      <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full mx-auto flex items-center justify-center mb-4">
+                        <TrashIcon size={24} className="text-red-600 dark:text-red-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">Delete {selectedMatters.length > 1 ? 'Matters' : 'Matter'}</h3>
+                      <p className="text-surface-600 dark:text-surface-400">
+                        Are you sure you want to delete {selectedMatters.length > 1 ? `these ${selectedMatters.length} matters` : 'this matter'}? This action cannot be undone.
+                      </p>
+                    </div>
+                    
+                    <div className="flex justify-center space-x-3">
+                      <button 
+                        onClick={() => setShowDeleteConfirmation(false)}
+                        className="px-4 py-2 border border-surface-300 dark:border-surface-600 rounded-xl"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={confirmDelete}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Pagination */}
+              {matters.length > itemsPerPage && (
+                <div className="px-6 py-4 bg-surface-50 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 flex items-center justify-between">
+                  <div className="text-sm text-surface-600 dark:text-surface-400">
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, matters.length)} of {matters.length} matters
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      onClick={() => setCurrentPage(curr => Math.max(curr - 1, 1))}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded-lg ${currentPage === 1 ? 'text-surface-400 cursor-not-allowed' : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
+                    >
+                      <ChevronLeftIcon size={16} />
+                    </button>
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button 
+                        key={i}
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={`w-8 h-8 rounded-lg ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white dark:bg-surface-900 text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => setCurrentPage(curr => Math.min(curr + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded-lg ${currentPage === totalPages ? 'text-surface-400 cursor-not-allowed' : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
+                    >
+                      <ChevronRightIcon size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* Grid view */}
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedMatters.map(matter => (
+                <div 
+                  key={matter.id}
+                  className="bg-white dark:bg-surface-900 rounded-2xl shadow-card overflow-hidden hover:shadow-soft transition-shadow"
+                >
+                  <div 
+                    className="p-6 cursor-pointer"
+                    onClick={() => navigate(`/matters/${matter.id}`)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="font-semibold">{matter.title}</h3>
+                      {renderStatusPill(matter.status)}
+                    </div>
+                    
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center text-sm">
+                        <UserIcon size={16} className="mr-2 text-surface-400" />
+                        <span className="text-surface-600 dark:text-surface-400">Client: {matter.client}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <FolderIcon size={16} className="mr-2 text-surface-400" />
+                        <span className="text-surface-600 dark:text-surface-400">Type: {matter.type}</span>
+                      </div>
+                      <div className="flex items-center text-sm">
+                        <CalendarIcon size={16} className="mr-2 text-surface-400" />
+                        <span className="text-surface-600 dark:text-surface-400">Updated: {formatDate(matter.lastUpdated)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-surface-200 dark:border-surface-700">
+                      <span className="text-sm text-surface-500 dark:text-surface-400">Assigned to: {matter.assignedTo}</span>
+                      <div className="flex items-center space-x-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditMatter(matter, e);
+                          }}
+                          className="p-1 text-surface-500 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                          title="Edit matter"
+                        >
+                          <EditIcon size={16} />
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMoreClick(matter.id, e);
+                          }}
+                          className="p-1 text-surface-500 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                          title="More options"
+                        >
+                          <MoreHorizontalIcon size={16} />
+                        </button>
+                        
+                        {/* Dropdown menu for grid view */}
+                        {showMoreMenu === matter.id && (
+                          <div className="absolute mt-8 w-48 bg-white dark:bg-surface-800 rounded-xl shadow-card border border-surface-200 dark:border-surface-700 z-10">
+                            <ul className="py-1">
+                              <li>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setCurrentMatter(matter);
+                                    setShowMoreMenu(null);
+                                    toast.success(`Matter ${matter.title} duplicated`);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700"
+                                >
+                                  Duplicate
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toast.success(`Matter ${matter.title} archived`);
+                                    setShowMoreMenu(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-surface-700 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700"
+                                >
+                                  Archive
+                                </button>
+                              </li>
+                              <li>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowMoreMenu(null);
+                                    setSelectedMatters([matter.id]);
+                                    setShowDeleteConfirmation(true);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                >
+                                  Delete
+                                </button>
+                              </li>
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Empty state */}
+          {matters.length === 0 && (
+            <div className="bg-white dark:bg-surface-900 rounded-2xl p-8 text-center shadow-card">
+              <div className="w-16 h-16 bg-surface-100 dark:bg-surface-800 rounded-full mx-auto flex items-center justify-center mb-4">
+                <SlashIcon size={24} className="text-surface-400" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">No matters found</h3>
+              <p className="text-surface-500 dark:text-surface-400 mb-6">Try adjusting your search or filter criteria</p>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedStatus('all');
+                  setSelectedType('all');
+                }}
+                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl"
+              >
+                Reset filters
+              </button>
+            </div>
+          )}
+        </motion.div>
+      </main>
+    </div>
+  );
+};
+
+export default MattersList;
                             <button className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800">
                               <MoreHorizontalIcon size={16} />
                             </button>
