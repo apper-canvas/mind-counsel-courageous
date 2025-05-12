@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { toast } from 'react-toastify';
+import { toast } from 'react-toastify'; 
 import { useNavigate } from 'react-router-dom';
 import getIcon from '../utils/iconUtils';
 
@@ -46,6 +46,11 @@ const ClientDirectory = () => {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [clientFormData, setClientFormData] = useState({});
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
   const itemsPerPage = 10;
@@ -111,6 +116,88 @@ const ClientDirectory = () => {
     setClients(filtered);
     setCurrentPage(1);
   }, [searchTerm, selectedStatus, selectedType, sortField, sortDirection]);
+
+  // Validate client form
+  const validateClientForm = (data) => {
+    const errors = {};
+    
+    if (!data.name || data.name.trim() === '') {
+      errors.name = 'Client name is required';
+    }
+    
+    if (!data.contactPerson || data.contactPerson.trim() === '') {
+      errors.contactPerson = 'Contact person is required';
+    }
+    
+    if (!data.email || data.email.trim() === '') {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+      errors.email = 'Email is invalid';
+    }
+    
+    if (!data.phone || data.phone.trim() === '') {
+      errors.phone = 'Phone number is required';
+    }
+    
+    if (!data.type || data.type.trim() === '') {
+      errors.type = 'Client type is required';
+    }
+    
+    if (!data.status || data.status.trim() === '') {
+      errors.status = 'Status is required';
+    }
+    
+    return errors;
+  };
+
+  // Handle client form submit
+  const handleClientFormSubmit = (e) => {
+    e.preventDefault();
+    
+    const errors = validateClientForm(clientFormData);
+    setFormErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      toast.error('Please fill in all required fields correctly');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      try {
+        if (isEditMode) {
+          // Update existing client
+          const updatedClients = clients.map(client => 
+            client.id === clientFormData.id ? clientFormData : client
+          );
+          setClients(updatedClients);
+          toast.success('Client updated successfully');
+        } else {
+          // Create new client
+          const newClient = {
+            ...clientFormData,
+            id: Math.max(...clients.map(c => c.id)) + 1,
+            lastContact: new Date().toISOString().split('T')[0]
+          };
+          setClients([...clients, newClient]);
+          toast.success('Client created successfully');
+        }
+        
+        // Reset form and close modal
+        setClientFormData({});
+        setShowClientModal(false);
+        setIsEditMode(false);
+        setFormErrors({});
+      } catch (error) {
+        toast.error(isEditMode ? 'Failed to update client' : 'Failed to create client');
+        console.error(error);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }, 800);
+  };
   
   // Handle status filters
   const handleStatusChange = (status) => {
@@ -179,6 +266,7 @@ const ClientDirectory = () => {
     if (clientToDelete) {
       // Single client delete
       setClients(clients.filter(client => client.id !== clientToDelete));
+      setSelectedClients(selectedClients.filter(id => id !== clientToDelete));
       toast.success(`Client deleted successfully`);
     } else if (selectedClients.length > 0) {
       // Batch delete
@@ -198,18 +286,49 @@ const ClientDirectory = () => {
   
   // Handle create client
   const handleCreateClient = () => {
-    toast.success('New client creation dialog would open here');
-    // This would typically open a modal or navigate to a creation form
+    setClientFormData({
+      name: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
+      address: '',
+      type: 'Individual',
+      status: 'active'
+    });
+    setIsEditMode(false);
+    setShowClientModal(true);
+    setFormErrors({});
+  };
+  
+  // Handle form input changes
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setClientFormData({
+      ...clientFormData,
+      [name]: value
+    });
+    
+    // Clear error for this field if set
+    if (formErrors[name]) {
+      setFormErrors({ ...formErrors, [name]: '' });
+    }
   };
   
   // Handle edit client
   const handleEditClient = (clientId) => {
     toast.info(`Editing client ${clientId}`);
     // This would typically open a modal or navigate to an edit form
+    const clientToEdit = clients.find(client => client.id === clientId);
+    if (clientToEdit) {
+      setClientFormData({ ...clientToEdit });
+      setIsEditMode(true);
+      setShowClientModal(true);
+      setFormErrors({});
+    }
   };
   
   const handleViewClient = (clientId) => {
-    // This would typically open a modal or navigate to an edit form
+    navigate(`/clients/${clientId}`);
   };
   
   // Handle sidebar toggle
@@ -246,6 +365,17 @@ const ClientDirectory = () => {
       day: 'numeric', 
       year: 'numeric' 
     }).format(date);
+  };
+  
+  // Handle export clients
+  const handleExportClients = () => {
+    const selectedClientData = clients.filter(client => selectedClients.includes(client.id));
+    // In a real app, this would generate CSV or PDF
+    console.log('Exporting clients:', selectedClientData);
+    
+    // Show success message
+    toast.success(`${selectedClients.length} clients exported successfully`);
+    setSelectedClients([]);
   };
   
   // Animations
@@ -428,7 +558,7 @@ const ClientDirectory = () => {
                   >
                     <TrashIcon size={16} />
                   </button>
-                  <button 
+                    onClick={handleExportClients}
                     onClick={() => handleBatchAction('export')}
                     className="p-2 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800"
                   >
@@ -616,7 +746,7 @@ const ClientDirectory = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
                             <button 
-                              onClick={() => navigate(`/clients/${client.id}`)}
+                              onClick={() => handleViewClient(client.id)}
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
                               title="View client profile"
                             >
@@ -729,7 +859,7 @@ const ClientDirectory = () => {
                       <span className="text-sm text-surface-500 dark:text-surface-400">Last Contact: {formatDate(client.lastContact)}</span>
                       <div className="flex items-center space-x-1">
                         <button 
-                          onClick={() => navigate(`/clients/${client.id}`)}
+                          onClick={() => handleViewClient(client.id)}
                           className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
                           title="View client profile"
                         >
@@ -808,6 +938,130 @@ const ClientDirectory = () => {
             </div>
           )}
         </motion.div>
+
+        {/* Client Form Modal */}
+        {showClientModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-surface-900 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-medium mb-4">
+                {isEditMode ? 'Edit Client' : 'Add New Client'}
+              </h3>
+              
+              <form onSubmit={handleClientFormSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Client Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={clientFormData.name || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.name ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    />
+                    {formErrors.name && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Contact Person</label>
+                    <input
+                      type="text"
+                      name="contactPerson"
+                      value={clientFormData.contactPerson || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.contactPerson ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    />
+                    {formErrors.contactPerson && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.contactPerson}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={clientFormData.email || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.email ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    />
+                    {formErrors.email && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={clientFormData.phone || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.phone ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    />
+                    {formErrors.phone && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Type</label>
+                    <select
+                      name="type"
+                      value={clientFormData.type || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.type ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    >
+                      {clientTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                    {formErrors.type && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.type}</p>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <select
+                      name="status"
+                      value={clientFormData.status || ''}
+                      onChange={handleFormChange}
+                      className={`w-full p-2 border rounded-xl ${formErrors.status ? 'border-red-500' : 'border-surface-200 dark:border-surface-700'} bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary`}
+                    >
+                      {clientStatuses.map(status => (
+                        <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                      ))}
+                    </select>
+                    {formErrors.status && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.status}</p>
+                    )}
+                  </div>
+                  
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Address</label>
+                    <textarea
+                      name="address"
+                      value={clientFormData.address || ''}
+                      onChange={handleFormChange}
+                      rows="3"
+                      className="w-full p-2 border border-surface-200 dark:border-surface-700 rounded-xl bg-white dark:bg-surface-800 focus:outline-none focus:ring-2 focus:ring-primary"
+                    ></textarea>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button type="button" onClick={() => setShowClientModal(false)} className="px-4 py-2 border border-surface-200 dark:border-surface-700 rounded-xl text-surface-700 dark:text-surface-300 hover:bg-surface-50 dark:hover:bg-surface-800">Cancel</button>
+                  <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl flex items-center">
+                    {isSubmitting && <span className="inline-block mr-2 animate-spin">&#9696;</span>}
+                    {isEditMode ? 'Update Client' : 'Create Client'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
