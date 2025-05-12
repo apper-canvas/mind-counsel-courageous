@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import getIcon from './utils/iconUtils';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import MattersList from './pages/MattersList';
-import MatterDetail from './pages/MatterDetail';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -49,8 +47,6 @@ function App() {
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/matters" element={<MattersList />} />
-          <Route path="/matters/:matterId" element={<MatterDetail />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
