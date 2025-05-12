@@ -331,6 +331,7 @@ const Dashboard = () => {
             <li>
               <a 
                 href="#" 
+                onClick={(e) => { e.preventDefault(); navigate('/clients'); }}
                 className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
               >
                 <UsersIcon className="h-5 w-5" />
