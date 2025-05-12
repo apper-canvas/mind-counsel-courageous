@@ -167,6 +167,12 @@ const MattersList = () => {
     setSelectedMatters([]);
   };
   
+  // Handle create matter
+  const handleCreateMatter = () => {
+    toast.success('New matter creation dialog would open here');
+    // This would typically open a modal or navigate to a creation form
+  };
+  
   // Handle sidebar toggle
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
