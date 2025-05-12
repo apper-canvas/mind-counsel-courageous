@@ -879,14 +879,9 @@ const MattersList = () => {
                               <UserIcon size={16} />
                             </button>
                             <button 
-                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
-                              title="Edit matter"
-                              onClick={(e) => handleEditMatter(matter, e)}
-                            >
-                              <EditIcon size={16} />
-                            </button>
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
                               title="Edit matter"
+                              onClick={(e) => handleEditMatter(matter, e)}
                             >
                               <EditIcon size={16} />
                             </button>
