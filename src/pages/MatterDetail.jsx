@@ -7,7 +7,7 @@ import getIcon from '../utils/iconUtils';
 const MatterDetail = () => {
   const { matterId } = useParams();
   const navigate = useNavigate();
-  const id = parseInt(matterId);
+  const id = parseInt(matterId, 10);
 
   // Icons
   const ChevronLeftIcon = getIcon('ChevronLeft');

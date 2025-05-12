@@ -89,7 +89,7 @@ const ClientProfile = () => {
     
     // Find client by ID in our sample data
     setTimeout(() => {
-      const foundClient = clientData.find(c => c.id === parseInt(clientId));
+      const foundClient = clientData.find(c => c.id === parseInt(clientId, 10));
       
       if (foundClient) {
         setClient(foundClient);
