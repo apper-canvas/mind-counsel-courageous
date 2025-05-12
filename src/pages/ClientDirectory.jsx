@@ -33,6 +33,7 @@ const ClientDirectory = () => {
   const MoreHorizontalIcon = getIcon('MoreHorizontal');
   const EditIcon = getIcon('Edit');
   const FileTextIcon = getIcon('FileText');
+  const EyeIcon = getIcon('Eye');
   
   // States
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,7 +204,11 @@ const ClientDirectory = () => {
   
   // Handle edit client
   const handleEditClient = (clientId) => {
-    toast.info(`Edit client ${clientId}`);
+    toast.info(`Editing client ${clientId}`);
+    // This would typically open a modal or navigate to an edit form
+  };
+  
+  const handleViewClient = (clientId) => {
     // This would typically open a modal or navigate to an edit form
   };
   
@@ -593,7 +598,14 @@ const ClientDirectory = () => {
                               onChange={() => toggleClientSelection(client.id)}
                               className="mr-3 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
                             />
-                            <span className="font-medium">{client.name}</span>
+                            <a 
+                              href={`/clients/${client.id}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/clients/${client.id}`);
+                              }}
+                              className="font-medium hover:text-primary transition-colors"
+                            >{client.name}</a>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-surface-700 dark:text-surface-300">{client.contactPerson}</td>
@@ -603,6 +615,13 @@ const ClientDirectory = () => {
                         <td className="px-6 py-4 text-surface-700 dark:text-surface-300">{formatDate(client.lastContact)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
+                            <button 
+                              onClick={() => navigate(`/clients/${client.id}`)}
+                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                              title="View client profile"
+                            >
+                              <EyeIcon size={16} />
+                            </button>
                             <button 
                               onClick={() => handleEditClient(client.id)}
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
@@ -674,7 +693,16 @@ const ClientDirectory = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-semibold">{client.name}</h3>
+                      <h3 className="font-semibold">
+                        <a 
+                          href={`/clients/${client.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/clients/${client.id}`);
+                          }}
+                          className="hover:text-primary transition-colors"
+                        >{client.name}</a>
+                      </h3>
                       {renderStatusPill(client.status)}
                     </div>
                     
@@ -700,6 +728,13 @@ const ClientDirectory = () => {
                     <div className="flex items-center justify-between pt-4 mt-4 border-t border-surface-200 dark:border-surface-700">
                       <span className="text-sm text-surface-500 dark:text-surface-400">Last Contact: {formatDate(client.lastContact)}</span>
                       <div className="flex items-center space-x-1">
+                        <button 
+                          onClick={() => navigate(`/clients/${client.id}`)}
+                          className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                          title="View client profile"
+                        >
+                          <EyeIcon size={16} />
+                        </button>
                         <button 
                           onClick={() => handleEditClient(client.id)}
                           className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"

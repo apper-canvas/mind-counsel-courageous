@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import MattersList from './pages/MattersList';
 import ClientDirectory from './pages/ClientDirectory';
 import MatterDetail from './pages/MatterDetail';
+import ClientProfile from './pages/ClientProfile';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -55,6 +56,7 @@ function App() {
           <Route path="/matters" element={<MattersList />} />
           <Route path="/matters/:matterId" element={<MatterDetail />} />
           <Route path="/clients" element={<ClientDirectory />} />
+          <Route path="/clients/:clientId" element={<ClientProfile />} />
           <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
         </Routes>
