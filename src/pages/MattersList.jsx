@@ -880,13 +880,11 @@ const MattersList = () => {
                             </button>
                             <button 
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
-                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+                              title="Edit matter"
+                              onClick={(e) => handleEditMatter(matter, e)}
+                            >
                               <EditIcon size={16} />
                             </button>
-                              <UserIcon size={16} />
-                            </button>
-                            <button 
-                              onClick={(e) => handleEditMatter(matter, e)}
                               className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
                               title="Edit matter"
                             >
@@ -1125,124 +1123,6 @@ const MattersList = () => {
                           </div>
                         )}
                       </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Empty state */}
-          {matters.length === 0 && (
-            <div className="bg-white dark:bg-surface-900 rounded-2xl p-8 text-center shadow-card">
-              <div className="w-16 h-16 bg-surface-100 dark:bg-surface-800 rounded-full mx-auto flex items-center justify-center mb-4">
-                <SlashIcon size={24} className="text-surface-400" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No matters found</h3>
-              <p className="text-surface-500 dark:text-surface-400 mb-6">Try adjusting your search or filter criteria</p>
-              <button 
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedStatus('all');
-                  setSelectedType('all');
-                }}
-                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl"
-              >
-                Reset filters
-              </button>
-            </div>
-          )}
-        </motion.div>
-      </main>
-    </div>
-  );
-};
-
-export default MattersList;
-                            <button className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800">
-                              <MoreHorizontalIcon size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              
-              {/* Pagination */}
-              {matters.length > itemsPerPage && (
-                <div className="px-6 py-4 bg-surface-50 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 flex items-center justify-between">
-                  <div className="text-sm text-surface-600 dark:text-surface-400">
-                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, matters.length)} of {matters.length} matters
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      onClick={() => setCurrentPage(curr => Math.max(curr - 1, 1))}
-                      disabled={currentPage === 1}
-                      className={`p-2 rounded-lg ${currentPage === 1 ? 'text-surface-400 cursor-not-allowed' : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
-                    >
-                      <ChevronLeftIcon size={16} />
-                    </button>
-                    {[...Array(totalPages)].map((_, i) => (
-                      <button 
-                        key={i}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-8 h-8 rounded-lg ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white dark:bg-surface-900 text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-                    <button 
-                      onClick={() => setCurrentPage(curr => Math.min(curr + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className={`p-2 rounded-lg ${currentPage === totalPages ? 'text-surface-400 cursor-not-allowed' : 'text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-700'}`}
-                    >
-                      <ChevronRightIcon size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Grid view */}
-          {viewMode === 'grid' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paginatedMatters.map(matter => (
-                <div 
-                  key={matter.id}
-                  className="bg-white dark:bg-surface-900 rounded-2xl shadow-card overflow-hidden hover:shadow-soft transition-shadow"
-                >
-                  <div 
-                    className="p-6 cursor-pointer"
-                    onClick={() => navigate(`/matters/${matter.id}`)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-semibold">{matter.title}</h3>
-                      {renderStatusPill(matter.status)}
-                    </div>
-                    
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm">
-                        <UserIcon size={16} className="mr-2 text-surface-400" />
-                        <span className="text-surface-600 dark:text-surface-400">Client: {matter.client}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <FolderIcon size={16} className="mr-2 text-surface-400" />
-                        <span className="text-surface-600 dark:text-surface-400">Type: {matter.type}</span>
-                      </div>
-                      <div className="flex items-center text-sm">
-                        <CalendarIcon size={16} className="mr-2 text-surface-400" />
-                        <span className="text-surface-600 dark:text-surface-400">Updated: {formatDate(matter.lastUpdated)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between pt-4 mt-4 border-t border-surface-200 dark:border-surface-700">
-                      <span className="text-sm text-surface-500 dark:text-surface-400">Assigned to: {matter.assignedTo}</span>
-                      <button className="p-2 text-surface-500 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800">
-                        <MoreHorizontalIcon size={16} />
-                      </button>
                     </div>
                   </div>
                 </div>
