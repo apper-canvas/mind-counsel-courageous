@@ -501,7 +501,12 @@ const MattersList = () => {
                               onChange={() => toggleMatterSelection(matter.id)}
                               className="mr-3 h-4 w-4 rounded border-surface-300 text-primary focus:ring-primary"
                             />
-                            <span className="font-medium">{matter.title}</span>
+                            <span 
+                              className="font-medium cursor-pointer hover:text-primary"
+                              onClick={() => navigate(`/matters/${matter.id}`)}
+                            >
+                              {matter.title}
+                            </span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-surface-700 dark:text-surface-300">{matter.client}</td>
@@ -510,7 +515,16 @@ const MattersList = () => {
                         <td className="px-6 py-4 text-surface-700 dark:text-surface-300">{formatDate(matter.lastUpdated)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
-                            <button className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800">
+                            <button 
+                              onClick={() => navigate(`/matters/${matter.id}`)}
+                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                              title="View matter details"
+                            >
+                              <UserIcon size={16} />
+                            </button>
+                            <button 
+                              className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800"
+                            >
                               <EditIcon size={16} />
                             </button>
                             <button className="p-1 text-surface-400 hover:text-primary rounded-full hover:bg-surface-100 dark:hover:bg-surface-800">
@@ -568,7 +582,10 @@ const MattersList = () => {
                   key={matter.id}
                   className="bg-white dark:bg-surface-900 rounded-2xl shadow-card overflow-hidden hover:shadow-soft transition-shadow"
                 >
-                  <div className="p-6">
+                  <div 
+                    className="p-6 cursor-pointer"
+                    onClick={() => navigate(`/matters/${matter.id}`)}
+                  >
                     <div className="flex items-start justify-between mb-3">
                       <h3 className="font-semibold">{matter.title}</h3>
                       {renderStatusPill(matter.status)}
