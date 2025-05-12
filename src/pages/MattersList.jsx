@@ -23,6 +23,9 @@ const MattersList = () => {
   const DownloadIcon = getIcon('Download');
   const CheckCircleIcon = getIcon('CheckCircle');
   const UserIcon = getIcon('User');
+  const UsersIcon = getIcon('Users');
+  const ClockIcon = getIcon('Clock');
+  const SettingsIcon = getIcon('Settings');
   const CalendarIcon = getIcon('Calendar');
   const FolderIcon = getIcon('Folder');
   const MoreHorizontalIcon = getIcon('MoreHorizontal');
@@ -278,7 +281,42 @@ const MattersList = () => {
                 {!sidebarCollapsed && <span className="ml-3">Matters</span>}
               </a>
             </li>
-            {/* Other menu items would be the same as in Home */}
+            <li>
+              <a 
+                href="#" 
+                className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
+              >
+                <UsersIcon className="h-5 w-5" />
+                {!sidebarCollapsed && <span className="ml-3">Clients</span>}
+              </a>
+            </li>
+            <li>
+              <a 
+                href="#" 
+                className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
+              >
+                <CalendarIcon className="h-5 w-5" />
+                {!sidebarCollapsed && <span className="ml-3">Calendar</span>}
+              </a>
+            </li>
+            <li>
+              <a 
+                href="#" 
+                className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
+              >
+                <ClockIcon className="h-5 w-5" />
+                {!sidebarCollapsed && <span className="ml-3">Time & Billing</span>}
+              </a>
+            </li>
+            <li>
+              <a 
+                href="#" 
+                className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
+              >
+                <SettingsIcon className="h-5 w-5" />
+                {!sidebarCollapsed && <span className="ml-3">Settings</span>}
+              </a>
+            </li>
           </ul>
         </nav>
       </motion.aside>
