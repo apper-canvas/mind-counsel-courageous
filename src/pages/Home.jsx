@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 import getIcon from '../utils/iconUtils';
 import MainFeature from '../components/MainFeature';
 
@@ -16,6 +17,7 @@ const Home = () => {
   const PlusIcon = getIcon('Plus');
   const SearchIcon = getIcon('Search');
   const BellIcon = getIcon('Bell');
+  const navigate = useNavigate();
   
   // State for sidebar collapse
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -259,7 +261,7 @@ const Home = () => {
                   ))}
                 </div>
                 
-                <button className="w-full mt-4 p-3 text-sm text-center text-primary hover:text-primary-dark">
+                <button onClick={() => navigate('/matters')} className="w-full mt-4 p-3 text-sm text-center text-primary hover:text-primary-dark">
                   View All Matters
                 </button>
               </motion.div>
