@@ -10,6 +10,7 @@ const MattersList = () => {
   // Icons
   const SearchIcon = getIcon('Search');
   const FilterIcon = getIcon('Filter');
+  const HomeIcon = getIcon('Home');
   const PlusIcon = getIcon('Plus');
   const ListIcon = getIcon('List');
   const GridIcon = getIcon('Grid');
