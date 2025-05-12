@@ -558,7 +558,7 @@ const ClientDirectory = () => {
                   >
                     <TrashIcon size={16} />
                   </button>
-                    onClick={handleExportClients}
+                  <button 
                     onClick={() => handleBatchAction('export')}
                     className="p-2 rounded-lg text-surface-600 dark:text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800"
                   >
