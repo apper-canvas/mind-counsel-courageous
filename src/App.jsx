@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import getIcon from './utils/iconUtils';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import Dashboard from './pages/Dashboard';
 import MattersList from './pages/MattersList';
 import MatterDetail from './pages/MatterDetail';
 
@@ -49,6 +50,7 @@ function App() {
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/matters" element={<MattersList />} />
           <Route path="/matters/:matterId" element={<MatterDetail />} />
           <Route path="/404" element={<NotFound />} />

@@ -251,19 +251,19 @@ const MattersList = () => {
         {/* Menu items */}
         <nav className="p-4">
           <ul className="space-y-2">
-            <li>
+            <li> 
               <a 
                 href="#" 
-                onClick={() => navigate('/')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/dashboard');
+                }}
                 className="flex items-center p-3 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800"
               >
-                <FolderIcon className="h-5 w-5" />
-                {!sidebarCollapsed && <span className="ml-3">Dashboard</span>}
+                <HomeIcon className="h-5 w-5" />
+                {!sidebarCollapsed && <span className="ml-3">Dashboard</span>} 
               </a>
             </li>
-            <li>
-              <a 
-                href="#" 
                 className="flex items-center p-3 rounded-xl bg-primary bg-opacity-10 text-primary dark:text-primary-light"
               >
                 <ListIcon className="h-5 w-5" />
