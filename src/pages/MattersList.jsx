@@ -264,6 +264,7 @@ const MattersList = () => {
                 {!sidebarCollapsed && <span className="ml-3">Dashboard</span>} 
               </a>
             </li>
+            <li>
                 className="flex items-center p-3 rounded-xl bg-primary bg-opacity-10 text-primary dark:text-primary-light"
               >
                 <ListIcon className="h-5 w-5" />
