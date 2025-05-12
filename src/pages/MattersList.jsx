@@ -267,6 +267,11 @@ const MattersList = () => {
             </li>
             <li>
               <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Stay on current page, just prevent default navigation
+                }}
                 className="flex items-center p-3 rounded-xl bg-primary bg-opacity-10 text-primary dark:text-primary-light"
               >
                 <ListIcon className="h-5 w-5" />
